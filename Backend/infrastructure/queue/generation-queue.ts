@@ -30,7 +30,7 @@ class GenerationQueue {
 
     if (!this.queue) {
       this.queue = new Queue(GENERATION_QUEUE_NAME, {
-        connection: redis,
+        connection: redis as any,
         defaultJobOptions: {
           attempts: 3,
           backoff: { type: 'exponential', delay: 2500 },
