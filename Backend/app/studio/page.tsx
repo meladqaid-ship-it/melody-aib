@@ -149,7 +149,7 @@ export default function AIStudioPage() {
             )}
 
             {inputMode === 'record' && (
-              <AudioRecorder onRecordingComplete={setAudioBlob} maxDuration={180} />
+              <AudioRecorder onRecordingComplete={setAudioBlob} />
             )}
 
             {inputMode === 'upload' && (
