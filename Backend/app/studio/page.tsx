@@ -306,9 +306,8 @@ export default function AIStudioPage() {
 
           {song && !isGenerating && (
             <SongPreview
-              song={song}
-              onDownload={() => {}}
-              onShare={() => {}}
+              audioUrl={song.audioUrl}
+              title={song.title || 'Generated Song'}
             />
           )}
 

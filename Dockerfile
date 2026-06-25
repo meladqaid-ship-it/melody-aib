@@ -16,6 +16,7 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy Backend subdirectories to root (matches tsconfig @/* -> ./* aliases)
 COPY Backend/app ./app
 COPY Backend/components ./components
+COPY Backend/hooks ./hooks
 COPY Backend/lib ./lib
 COPY Backend/config ./config
 COPY Backend/middleware ./middleware
