@@ -59,14 +59,13 @@ export default function AIStudioPage() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const {
-    startGeneration,
-    isGenerating,
-    progress,
-    songId,
-    audioUrl,
-    status,
-    error,
-  } = useSongGeneration();
+  startGeneration,
+  isGenerating,
+  progress,
+  songId,
+  audioUrl,
+  error,
+} = useSongGeneration();
 
   const { toast } = useToast();
 
@@ -321,10 +320,9 @@ export default function AIStudioPage() {
 
           {audioUrl && !isGenerating && (
             <SongPreview
-              audioUrl={audioUrl}
-              title={songId ? `Generated Song #${songId}` : 'Generated Song'}
-              status={status}
-            />
+  audioUrl={audioUrl}
+  title={songId ? `Generated Song #${songId}` : 'Generated Song'}
+/>
           )}
 
           {!audioUrl && !isGenerating && (
