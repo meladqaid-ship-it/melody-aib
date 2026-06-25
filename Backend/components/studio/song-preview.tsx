@@ -40,11 +40,11 @@ export function SongPreview({ audioUrl, title = 'Generated Song' }: SongPreviewP
         <Button size="sm" variant="outline" onClick={togglePlay}>
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
-        <Button size="sm" variant="outline" asChild>
-          <a href={audioUrl} download>
-            <Download className="h-4 w-4" />
-          </a>
-        </Button>
+        <a href={audioUrl} download>
+  <Button size="sm" variant="outline">
+    <Download className="h-4 w-4" />
+  </Button>
+</a>
       </div>
     </div>
   );
