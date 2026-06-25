@@ -154,10 +154,8 @@ export default function AIStudioPage() {
 
             {inputMode === 'upload' && (
               <AudioUploader
-                onFileSelect={setAudioBlob}
-                accept="audio/*"
-                maxSize={50 * 1024 * 1024}
-              />
+  onFileSelected={setAudioBlob}
+/>
             )}
           </Card>
 
