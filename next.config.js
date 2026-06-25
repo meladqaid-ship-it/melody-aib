@@ -2,14 +2,11 @@
 const nextConfig = {
   output: 'standalone',
 
-  // ✅ REMOVED ignoreBuildErrors — enforce clean TypeScript builds
-  // typescript: { ignoreBuildErrors: true }, // DO NOT re-enable
-
   images: {
     remotePatterns: [{ protocol: 'https', hostname: '**' }],
   },
 
-  // Security headers (CORS handled by middleware, these add extra protection)
+  // Security headers (CORS handled by middleware)
   async headers() {
     return [
       {
@@ -26,9 +23,9 @@ const nextConfig = {
     ];
   },
 
+  // Prevent server-only packages from being bundled client-side
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Prevent server-only modules from being bundled for the browser
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false, net: false, tls: false, dns: false,
@@ -38,7 +35,19 @@ const nextConfig = {
     return config;
   },
 
-  // Reduce noise in Render logs
+  // Packages that must not be bundled by Next.js (they use native Node.js APIs)
+  serverExternalPackages: [
+    'ioredis',
+    'bullmq',
+    'sharp',
+    'nodemailer',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/lib-storage',
+    '@aws-sdk/s3-request-presigner',
+    'bcryptjs',
+    'ffmpeg-static',
+  ],
+
   poweredByHeader: false,
 };
 

@@ -13,40 +13,37 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 
-# ✅ FIX: the original Dockerfile copied each subfolder of Backend/
-# individually (Backend/app, Backend/lib, Backend/services, ...) with one
-# `COPY` line per folder, FLATTENING each into the container's /app root —
-# except Backend/enterprise, which was copied to ./Backend/enterprise,
-# preserving its prefix. This inconsistency is why this codebase's `@/`
-# alias resolves `@/lib/...` one way and `@/Backend/enterprise/...`
-# another way, and it meant every NEW top-level folder added under Backend/
-# (domains/, application/, infrastructure/ — added in this refactor) would
-# silently NOT be copied into the image at all unless someone remembered to
-# add another COPY line here. That's the root cause `next.config.js`'s
-# `typescript: { ignoreBuildErrors: true }` was masking: type errors from
-# files that exist on disk locally but don't exist in the actual build
-# context were being silently ignored rather than fixed.
-#
-# Fix: copy the ENTIRE Backend/ directory as ./Backend (preserving the
-# prefix, matching the enterprise/ precedent that already worked), and
-# additionally copy app/ to the conventional Next.js root location so
-# routing still works. Every `@/Backend/...` import (this refactor's
-# convention going forward) now resolves automatically for any future
-# folder added under Backend/, with no Dockerfile change required.
-COPY Backend ./Backend
+# Copy Backend subdirectories to root (matches tsconfig @/* -> ./* aliases)
 COPY Backend/app ./app
-COPY Backend/config ./config
 COPY Backend/components ./components
 COPY Backend/lib ./lib
+COPY Backend/config ./config
 COPY Backend/middleware ./middleware
 COPY Backend/services ./services
+COPY Backend/enterprise ./enterprise
+COPY Backend/application ./application
+COPY Backend/domains ./domains
+COPY Backend/infrastructure ./infrastructure
+
+# Also copy Backend/ itself so @/Backend/* imports work
+COPY Backend ./Backend
+
+# Root-level files
 COPY prisma ./prisma
 COPY package.json ./
-COPY next.config.js ./
 COPY tsconfig.json ./
+COPY next.config.js ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+
+# Root middleware (the active one)
+COPY middleware.ts ./middleware.ts
 
 RUN mkdir -p public
 RUN npx prisma generate --schema=./prisma/schema.prisma
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
 FROM node:20-alpine AS runner
@@ -58,8 +55,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
 RUN mkdir -p public
 
 COPY --from=builder /app/public ./public

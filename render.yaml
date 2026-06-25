@@ -1,14 +1,13 @@
-# render.yaml — Render Deployment Config
+# render.yaml — Render Blueprint (Docker-based)
 # Docs: https://render.com/docs/blueprint-spec
 
 services:
   - type: web
     name: melody-ai-backend
-    env: node
+    env: docker
     region: oregon
     plan: starter
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -23,18 +22,53 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
       - key: NEXTAUTH_SECRET
         generateValue: true
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_STARTER
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_BUSINESS
+        sync: false
+      - key: STRIPE_PRICE_ENTERPRISE
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
 
   - type: worker
     name: melody-ai-worker
-    env: node
+    env: docker
     region: oregon
     plan: starter
-    buildCommand: npm install && npx prisma generate
-    startCommand: npm run worker
+    dockerfilePath: ./Dockerfile.worker
     envVars:
       - key: NODE_ENV
         value: production
@@ -46,3 +80,21 @@ services:
         value: "3"
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: FAL_KEY
+        sync: false
+      - key: SUNO_API_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false

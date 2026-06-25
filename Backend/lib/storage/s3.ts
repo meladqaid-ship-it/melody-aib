@@ -11,8 +11,8 @@ class S3Service {
       endpoint: process.env.S3_ENDPOINT,
       region: process.env.S3_REGION || 'us-east-1',
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY || '',
-        secretAccessKey: process.env.S3_SECRET_KEY || '',
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY || '',
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_KEY || '',
       },
       forcePathStyle: true, // Needed for MinIO and some S3-compatible services
     });
