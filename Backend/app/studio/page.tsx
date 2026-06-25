@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,34 +15,38 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AudioRecorder } from '@/components/studio/audio-recorder';
 import { AudioUploader } from '@/components/studio/audio-uploader';
 import { SongPreview } from '@/components/studio/song-preview';
 import { useToast } from '@/hooks/use-toast';
 import { useSongGeneration } from '@/hooks/use-song-generation';
-import {
-  Mic,
-  Upload,
-  Music,
-  Play,
-  Download,
-  Share2,
-  Sparkles,
-  Loader2,
-} from 'lucide-react';
+import { Mic, Upload, Music, Sparkles, Loader2 } from 'lucide-react';
 
 const songSchema = z.object({
   lyrics: z.string().min(10, 'Lyrics must be at least 10 characters').optional(),
   genre: z.enum([
-    'POP', 'RAP', 'ROCK', 'EDM', 'ARABIC',
-    'KHALEEJI', 'YEMENI', 'LOFI', 'CINEMATIC', 'ACOUSTIC',
+    'POP',
+    'RAP',
+    'ROCK',
+    'EDM',
+    'ARABIC',
+    'KHALEEJI',
+    'YEMENI',
+    'LOFI',
+    'CINEMATIC',
+    'ACOUSTIC',
   ]),
-  mood: z.enum(['HAPPY', 'SAD', 'EPIC', 'ROMANTIC', 'EMOTIONAL', 'MOTIVATIONAL']),
+  mood: z.enum([
+    'HAPPY',
+    'SAD',
+    'EPIC',
+    'ROMANTIC',
+    'EMOTIONAL',
+    'MOTIVATIONAL',
+  ]),
   language: z.enum(['ARABIC', 'ENGLISH']),
   duration: z.number().min(30).max(180),
   voiceType: z.enum(['MALE', 'FEMALE']),
@@ -53,7 +57,17 @@ type SongFormData = z.infer<typeof songSchema>;
 export default function AIStudioPage() {
   const [inputMode, setInputMode] = useState<'text' | 'record' | 'upload'>('text');
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const { generate, isGenerating, progress, song } = useSongGeneration();
+
+  const {
+    startGeneration,
+    isGenerating,
+    progress,
+    songId,
+    audioUrl,
+    status,
+    error,
+  } = useSongGeneration();
+
   const { toast } = useToast();
 
   const form = useForm<SongFormData>({
@@ -69,11 +83,11 @@ export default function AIStudioPage() {
 
   const onSubmit = async (data: SongFormData) => {
     try {
-      await generate({
+      await startGeneration({
         ...data,
         audio: audioBlob,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to generate song. Please try again.',
@@ -84,7 +98,6 @@ export default function AIStudioPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -99,13 +112,11 @@ export default function AIStudioPage() {
       </motion.div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Input Section */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="space-y-6"
         >
-          {/* Input Mode Selection */}
           <Card className="p-6 bg-gradient-to-br from-gray-900 to-black border-purple-500/20">
             <div className="flex gap-2 mb-6">
               {[
@@ -116,7 +127,7 @@ export default function AIStudioPage() {
                 <Button
                   key={mode.value}
                   variant={inputMode === mode.value ? 'default' : 'outline'}
-                  onClick={() => setInputMode(mode.value as any)}
+                  onClick={() => setInputMode(mode.value as 'text' | 'record' | 'upload')}
                   className={`flex-1 ${
                     inputMode === mode.value
                       ? 'bg-purple-600 hover:bg-purple-700'
@@ -129,7 +140,6 @@ export default function AIStudioPage() {
               ))}
             </div>
 
-            {/* Dynamic Input */}
             {inputMode === 'text' && (
               <Textarea
                 placeholder="Enter your lyrics here...&#10;&#10;Example:&#10;In the quiet night, I hear your voice&#10;Echoing through the stars above..."
@@ -139,22 +149,18 @@ export default function AIStudioPage() {
             )}
 
             {inputMode === 'record' && (
-              <AudioRecorder
-                onRecordingComplete={setAudioBlob}
-                maxDuration={180}
-              />
+              <AudioRecorder onRecordingComplete={setAudioBlob} maxDuration={180} />
             )}
 
             {inputMode === 'upload' && (
               <AudioUploader
                 onFileSelect={setAudioBlob}
                 accept="audio/*"
-                maxSize={50 * 1024 * 1024} // 50MB
+                maxSize={50 * 1024 * 1024}
               />
             )}
           </Card>
 
-          {/* Options */}
           <Card className="p-6 bg-gradient-to-br from-gray-900 to-black border-purple-500/20 space-y-6">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-400" />
@@ -165,7 +171,7 @@ export default function AIStudioPage() {
               <div className="space-y-2">
                 <Label className="text-gray-300">Genre</Label>
                 <Select
-                  onValueChange={(value) => form.setValue('genre', value as any)}
+                  onValueChange={(value) => form.setValue('genre', value as SongFormData['genre'])}
                   defaultValue={form.getValues('genre')}
                 >
                   <SelectTrigger className="bg-black/50 border-gray-700 text-white">
@@ -189,7 +195,7 @@ export default function AIStudioPage() {
               <div className="space-y-2">
                 <Label className="text-gray-300">Mood</Label>
                 <Select
-                  onValueChange={(value) => form.setValue('mood', value as any)}
+                  onValueChange={(value) => form.setValue('mood', value as SongFormData['mood'])}
                   defaultValue={form.getValues('mood')}
                 >
                   <SelectTrigger className="bg-black/50 border-gray-700 text-white">
@@ -209,7 +215,9 @@ export default function AIStudioPage() {
               <div className="space-y-2">
                 <Label className="text-gray-300">Language</Label>
                 <Select
-                  onValueChange={(value) => form.setValue('language', value as any)}
+                  onValueChange={(value) =>
+                    form.setValue('language', value as SongFormData['language'])
+                  }
                   defaultValue={form.getValues('language')}
                 >
                   <SelectTrigger className="bg-black/50 border-gray-700 text-white">
@@ -225,7 +233,9 @@ export default function AIStudioPage() {
               <div className="space-y-2">
                 <Label className="text-gray-300">Voice</Label>
                 <Select
-                  onValueChange={(value) => form.setValue('voiceType', value as any)}
+                  onValueChange={(value) =>
+                    form.setValue('voiceType', value as SongFormData['voiceType'])
+                  }
                   defaultValue={form.getValues('voiceType')}
                 >
                   <SelectTrigger className="bg-black/50 border-gray-700 text-white">
@@ -246,6 +256,7 @@ export default function AIStudioPage() {
                   {form.watch('duration')}s
                 </span>
               </div>
+
               <Slider
                 min={30}
                 max={180}
@@ -254,6 +265,7 @@ export default function AIStudioPage() {
                 onValueChange={([value]) => form.setValue('duration', value)}
                 className="cursor-pointer"
               />
+
               <div className="flex justify-between text-xs text-gray-500">
                 <span>30s</span>
                 <span>60s</span>
@@ -261,6 +273,12 @@ export default function AIStudioPage() {
                 <span>180s</span>
               </div>
             </div>
+
+            {error && (
+              <p className="text-sm text-red-400 text-center">
+                {error}
+              </p>
+            )}
 
             <Button
               onClick={form.handleSubmit(onSubmit)}
@@ -282,7 +300,6 @@ export default function AIStudioPage() {
           </Card>
         </motion.div>
 
-        {/* Preview Section */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -304,14 +321,15 @@ export default function AIStudioPage() {
             </Card>
           )}
 
-          {song && !isGenerating && (
+          {audioUrl && !isGenerating && (
             <SongPreview
-              audioUrl={song.audioUrl}
-              title={song.title || 'Generated Song'}
+              audioUrl={audioUrl}
+              title={songId ? `Generated Song #${songId}` : 'Generated Song'}
+              status={status}
             />
           )}
 
-          {!song && !isGenerating && (
+          {!audioUrl && !isGenerating && (
             <Card className="p-12 bg-gradient-to-br from-gray-900 to-black border-purple-500/20 flex flex-col items-center justify-center text-center">
               <Music className="h-20 w-20 text-gray-700 mb-4" />
               <h3 className="text-xl font-semibold text-gray-400 mb-2">
