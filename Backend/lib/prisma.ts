@@ -11,7 +11,7 @@ const LOG_LEVELS =
 
 function createPrismaClient() {
   const client = new PrismaClient({
-    log: LOG_LEVELS,
+    log: [...LOG_LEVELS],
     // Neon/Render: shorter connection timeout to fail fast on misconfiguration
     datasources: {
       db: {
