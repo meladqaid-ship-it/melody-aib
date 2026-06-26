@@ -1,4 +1,4 @@
-# syntax=docker.io/docker/dockerfile:1
+
 
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
