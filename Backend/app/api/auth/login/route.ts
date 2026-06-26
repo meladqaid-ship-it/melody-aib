@@ -6,15 +6,15 @@ import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
 import { rateLimit } from '@/middleware/rate-limit';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const loginSchema = z.object({
   email: z.string().email().toLowerCase().trim(),
   password: z.string().min(1),
 });
 
-function jsonResponse(
-  body: unknown,
-  status = 200
-) {
+function jsonResponse(body: unknown, status = 200) {
   return NextResponse.json(body, { status });
 }
 
@@ -150,6 +150,8 @@ export async function POST(req: NextRequest) {
         success: true,
         data: {
           accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          token: tokens.accessToken,
           user: {
             id: user.id,
             email: user.email,
@@ -168,19 +170,29 @@ export async function POST(req: NextRequest) {
 
     response.cookies.set('auth-token', tokens.accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60,
+    });
+
+    response.cookies.set('auth_token', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
       maxAge: 15 * 60,
     });
 
     response.cookies.set('refresh-token', tokens.refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60,
     });
+
+    response.headers.set('Cache-Control', 'no-store');
 
     return response;
   } catch (error) {
