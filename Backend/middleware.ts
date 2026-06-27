@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // ======================
 const allowedOrigins = [
   'https://melody-ai.netlify.app',
+  'https://melody-ai-g35z.onrender.com',
   'http://localhost:3000',
 ];
 
@@ -19,7 +20,7 @@ function getCorsHeaders(origin: string | null) {
 
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Credentials': 'true',
   };
@@ -32,9 +33,6 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const origin = req.headers.get('origin');
 
-  // ----------------------
-  // 1. Handle CORS Preflight
-  // ----------------------
   if (req.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 204,
@@ -42,14 +40,15 @@ export function middleware(req: NextRequest) {
     });
   }
 
-  // ----------------------
-  // 2. Protect API Routes (optional auth guard)
-  // ----------------------
   const protectedRoutes = [
     '/api/projects',
     '/api/ai',
+    '/api/studio',
+    '/api/songs',
     '/api/credits',
     '/api/user',
+    '/api/admin',
+    '/api/billing',
   ];
 
   const isProtected = protectedRoutes.some((route) =>
@@ -63,7 +62,7 @@ export function middleware(req: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { success: false, error: 'Unauthorized' },
         {
           status: 401,
           headers: getCorsHeaders(origin),
@@ -72,12 +71,8 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ----------------------
-  // 3. Normal request pass-through
-  // ----------------------
   const response = NextResponse.next();
 
-  // Attach CORS headers to every response
   Object.entries(getCorsHeaders(origin)).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
@@ -85,11 +80,6 @@ export function middleware(req: NextRequest) {
   return response;
 }
 
-// ======================
-// 🔥 Middleware matcher
-// ======================
 export const config = {
-  matcher: [
-    '/api/:path*', // apply only to API routes
-  ],
+  matcher: ['/api/:path*'],
 };
